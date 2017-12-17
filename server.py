@@ -35,6 +35,7 @@ class RouterTCPServer (socketserver.StreamRequestHandler):
 			print (self.data)
 
 			if self.data ['status'] == 0: # free
+				global queue_of_clients # this line does NOT change the situation
 				print ('new element to queue', queue_of_clients.qsize ()) # 0
 				print ('new element to queue', queue_of_clients.empty ()) # True
 				print ('new element to queue', self.client_address) # Any address
