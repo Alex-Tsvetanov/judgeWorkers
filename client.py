@@ -39,18 +39,22 @@ class client:
 	def eval_task (self):
 		self.init_socket ()
 		received = self._recvall (self.socketToServer) # get task
+		print ('task received')
 		#time.sleep (0.4)
 		
 		self.status = self.BUSY
 		self.progress = {'ready': 5, 'total': 20, 'points': float('nan')}
 		self.send_stats ()
+		print ('task partially solved')
 		
 		self.progress = {'ready': 20, 'total': 20, 'points': 0.95}
 		self.send_stats ()
+		print ('task solved')
 
 		self.status = self.WAITING
 		self.progress = {}
 		self.send_stats ()
+		print ('set the worker free')
 
 	def ping (self):
 		self.init_socket ()
