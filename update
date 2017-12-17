@@ -1,6 +1,6 @@
-echo "# judgeWorkers" >> README.md
+echo "# judgeWorkers" > README.md
 git init
 git add -A
-git commit -m "first commit"
+git commit
 git remote add origin https://github.com/Alex-Tsvetanov/judgeWorkers.git
 git push -u origin master
