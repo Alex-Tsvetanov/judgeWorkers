@@ -35,12 +35,12 @@ class RouterTCPServer (socketserver.StreamRequestHandler):
 			print (self.data)
 
 			if self.data ['status'] == 0: # free
-				print ('new element to queue', queue_of_clients.qsize ())
-				print ('new element to queue', queue_of_clients.empty ())
-				print ('new element to queue', self.client_address)
+				print ('new element to queue', queue_of_clients.qsize ()) # 0
+				print ('new element to queue', queue_of_clients.empty ()) # True
+				print ('new element to queue', self.client_address) # Any address
 				queue_of_clients.put (self.client_address)
-				print ('new element to queue', queue_of_clients.qsize ())
-				print ('new element to queue', queue_of_clients.empty ())
+				print ('new element to queue', queue_of_clients.qsize ()) # Here we can see size of the queue is unchanged
+				print ('new element to queue', queue_of_clients.empty ()) # and it is continuing to be empty
 				self.request.sendall (bytes ('wait', 'utf-8'))
 
 			# received task partial results or full results
