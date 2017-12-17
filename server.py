@@ -6,6 +6,9 @@ import time
 clients = set ()
 queue_of_clients = Queue ()
 
+class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
+    pass
+
 class RouterTCPServer (socketserver.StreamRequestHandler):
 	def _recvall (self):
 		BUFF_SIZE = 1
@@ -52,10 +55,10 @@ class RouterTCPServer (socketserver.StreamRequestHandler):
 			# received task partial results or full results
 			elif self.data ['status'] == 1: # busy
 				if self.data ['progress']['ready'] == self.data ['progress']['total']:
-					# update score in db...
+					# TODO: update score in db...
 					self.request.sendall (bytes ('wait\n', 'utf-8'))
 				elif self.data ['progress']['ready'] != self.data ['progress']['total']:
-					# update testing status in db...
+					# TODO: update testing status in db...
 					self.request.sendall (bytes ('wait\n', 'utf-8'))
 
 from threading import Thread
@@ -65,12 +68,12 @@ def checkDB (socketServer):
 	print (dir(socketServer))
 	print (dir(socketServer.socket))
 	while True:
-		task = {'name': 'shit'}
-		print ('Queue:', queue_of_clients.qsize ())
-		print ('Clients:', len(clients))
-		while queue_of_clients.empty (): continue
-		print ('Queue:', queue_of_clients.qsize ())
-		print ('Clients:', len(clients))
+		task = {'name': 'shit'} # TODO: get task from DB
+		#print ('Queue:', queue_of_clients.qsize ())
+		#print ('Clients:', len(clients))
+		while queue_of_clients.empty (): continue # wait 'till some client become free
+		#print ('Queue:', queue_of_clients.qsize ())
+		#print ('Clients:', len(clients))
 		try:
 			free_client = queue_of_clients.get ()
 		except:
@@ -90,7 +93,7 @@ def checkDB (socketServer):
 if __name__ == '__main__':
 	HOST, PORT = 'localhost', 8000
 
-	with socketserver.TCPServer ((HOST, PORT), RouterTCPServer) as server:
+	with ThreadedTCPServer ((HOST, PORT), RouterTCPServer) as server:
 		t = Thread (target=checkDB, args=(server,))
 		t.start ()
 		
