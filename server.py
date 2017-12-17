@@ -1,7 +1,7 @@
 import socketserver
 import json
 from queue import Queue
-import time
+from db import get_task, update_partial_task, update_task
 
 clients = set ()
 queue_of_clients = Queue ()
@@ -55,11 +55,13 @@ class RouterTCPServer (socketserver.StreamRequestHandler):
 			# received task partial results or full results
 			elif self.data ['status'] == 1: # busy
 				if self.data ['progress']['ready'] == self.data ['progress']['total']:
+					update_task (self.data ['progress']['task']['id'], self.data ['progress']['points'])
 					# TODO: update score in db...
 					self.request.sendall (bytes ('wait\n', 'utf-8'))
 				elif self.data ['progress']['ready'] != self.data ['progress']['total']:
 					# TODO: update testing status in db...
-					self.request.sendall (bytes ('wait\n', 'utf-8'))
+					update_partial_task (self.data ['progress']['task']['id'], "Evaluating...  {}/{}".format (self.data ['progress']['ready'], self.data ['progress']['total']))
+					self.request.sendall (bytes ('go on\n', 'utf-8'))
 
 from threading import Thread
 
@@ -68,7 +70,8 @@ def checkDB (socketServer):
 	print (dir(socketServer))
 	print (dir(socketServer.socket))
 	while True:
-		task = {'name': 'shit'} # TODO: get task from DB
+		task = get_task () # TODO: get task from DB
+		if task == None: continue
 		#print ('Queue:', queue_of_clients.qsize ())
 		#print ('Clients:', len(clients))
 		while queue_of_clients.empty (): continue # wait 'till some client become free
@@ -85,6 +88,8 @@ def checkDB (socketServer):
 			print ('Error: cannot send "task" to', free_client)
 			continue
 		try:
+			print (task)
+			print (json.dumps (task))
 			free_client.sendall (bytes (json.dumps (task) + '\n', 'utf-8'))
 		except:
 			print ('Error: cannot send the task to', free_client)

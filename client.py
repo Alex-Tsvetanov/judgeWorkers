@@ -39,15 +39,25 @@ class client:
 	def eval_task (self):
 		self.init_socket ()
 		received = self._recvall (self.socketToServer) # get task
+		task = json.loads (received)
 		print ('task received')
 		#time.sleep (0.4)
+
+		ready = 0
+		total = len (task ['tests'])
+		points = float (0)
 		
-		self.status = self.BUSY
-		self.progress = {'ready': 5, 'total': 20, 'points': float('nan')}
-		self.send_stats ()
-		print ('task partially solved')
-		
-		self.progress = {'ready': 20, 'total': 20, 'points': 0.95}
+		for x in task ['tests']:
+			self.status = self.BUSY
+			self.progress = {'task': task, 'ready': ready, 'total': total, 'points': float('nan')}
+			self.send_stats ()
+			print ('task partially solved')
+
+			ready += 1
+			if True:
+				points += (1.0 / total)
+			
+		self.progress = {'task': task, 'ready': ready, 'total': total, 'points': points}
 		self.send_stats ()
 		print ('task solved')
 
@@ -67,6 +77,9 @@ class client:
 			self.eval_task ()
 		elif received == 'wait':
 			print ('waiting')
+			pass
+		elif received == 'go on':
+			print ('continuing')
 			pass
 		elif received == '':
 			#print ('connection finished')
