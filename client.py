@@ -1,6 +1,7 @@
 import socket
 import sys
 import json
+import time
 
 class client:
 	WAITING, BUSY = range (2)
@@ -14,30 +15,31 @@ class client:
 		self.init_socket ()
 
 	def _recvall (self, sock):
-		BUFF_SIZE = 4096
+		BUFF_SIZE = 1
 		data = b""
 		while True:
 			part = sock.recv (BUFF_SIZE)
 			data += part
+			if part == b'\n':
+				break
 			if len(part) < BUFF_SIZE:
 				break
-		return str(data, 'utf-8')
+		return str(data, 'utf-8').strip ()
 
 	def init_socket (self):
 		if self.socketToServer == None:
 			self.socketToServer = socket.socket (self.interface, self.socketAction)
 			self.socketToServer.connect ((self.host, self.port))
 			self.send_stats ()
-		pass
 
 	def send_stats (self):
 		self.init_socket ()
-		self.socketToServer.sendall (bytes (json.dumps ({'status': self.status, 'progress': self.progress}), 'utf-8'))
-		pass
+		self.socketToServer.sendall (bytes (json.dumps ({'status': self.status, 'progress': self.progress}) + '\n', 'utf-8'))
 	
 	def eval_task (self):
 		self.init_socket ()
 		received = self._recvall (self.socketToServer) # get task
+		#time.sleep (0.4)
 		
 		self.status = self.BUSY
 		self.progress = {'ready': 5, 'total': 20, 'points': float('nan')}
@@ -53,20 +55,23 @@ class client:
 	def ping (self):
 		self.init_socket ()
 		received = self._recvall (self.socketToServer) # get task
+		#time.sleep (0.4)
 
 		if received == 'ping':
 			self.send_stats ()
 		elif received == 'task':
 			self.eval_task ()
 		elif received == 'wait':
+			print ('waiting')
 			pass
 		elif received == '':
-			print ('connection failed')
+			#print ('connection finished')
 			self.socketToServer = None
 			pass
 		else:
-			print ('Received:', received)
-			self.socketToServer.sendall (bytes (json.dumps ({'error': 'invalid ping', 'type': received}), 'utf-8'))
+			print ('Received: "', received, '"')
+			print ('Error: invalid ping -', received)
+			#self.socketToServer.sendall (bytes (json.dumps ({'error': 'invalid ping', 'type': received}), 'utf-8'))
 			pass
 
 
