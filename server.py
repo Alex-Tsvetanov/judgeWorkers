@@ -19,10 +19,12 @@ class RouterTCPServer (socketserver.StreamRequestHandler):
 	def setup (self):
 		print('{}:{} connected'.format(*self.client_address))
 		clients.add (self.client_address)
+		print ('Clients:', len(clients))
 
 	def finish (self):
 		print('{}:{} disconnected'.format(*self.client_address))
 		clients.remove (self.client_address)
+		print ('Clients:', len(clients))
 
 	def handle (self):
 		while True:
@@ -41,7 +43,7 @@ class RouterTCPServer (socketserver.StreamRequestHandler):
 				print ('new element to queue', self.client_address) # Any address
 				queue_of_clients.put (self.client_address)
 				print ('new element to queue', queue_of_clients.qsize ()) # Here we can see size of the queue is unchanged
-				print ('new element to queue', queue_of_clients.empty ()) # and it is continuing to be empty
+				print ('new element to queue', queue_of_clients.empty ()) # and it is continuing to be empty, but clients is changed?!?!
 				self.request.sendall (bytes ('wait', 'utf-8'))
 
 			# received task partial results or full results
@@ -61,6 +63,7 @@ def checkDB (socketServer):
 	while True:
 		task = {'name': 'shit'}
 		print (queue_of_clients.qsize ())
+		print ('Clients:', len(clients))
 		while True:
 			try:
 				free_client = queue_of_clients.get ()
